@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Splatoon Analytics</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #101010, #050505);
+  color: #eaeaea;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #00ffd5;
+  text-shadow: 0 0 10px #00ffd5;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.big {
+  font-size: 22px;
+  color: #00ffd5;
+  font-weight: bold;
+}
+
+input, select {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+  background: #1f1f1f;
+  color: #fff;
+}
+
+button {
+  padding: 12px;
+  background: linear-gradient(135deg,#00ffd5,#00aaff);
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.list .card {
+  margin: 10px 0;
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📊 SPLATOON ANALYTICS</h1>
+
+<div class="grid">
+  <div class="card">勝率<div class="big" id="rate">0%</div></div>
+  <div class="card">試合数<div class="big" id="count">0</div></div>
+  <div class="card">K/D<div class="big" id="kd">0</div></div>
+  <div class="card">平均塗り<div class="big" id="paintAvg">0</div></div>
+</div>
+
+<h2>入力</h2>
+
+<input id="weapon" placeholder="ブキ">
+<input id="stage" placeholder="ステージ">
+
+<select id="rule">
+  <option>ナワバリ</option>
+  <option>ガチエリア</option>
+  <option>ガチヤグラ</option>
+  <option>ガチホコ</option>
+  <option>ガチアサリ</option>
+</select>
+
+<input id="kills" type="number" placeholder="キル">
+<input id="deaths" type="number" placeholder="デス">
+<input id="paint" type="number" placeholder="塗り">
+<select id="result">
+  <option value="win">勝ち</option>
+  <option value="lose">負け</option>
+</select>
+
+<input id="memo" placeholder="メモ">
+
+<button onclick="addMatch()">追加</button>
+
+<h2>📈 グラフ</h2>
+<canvas id="winChart"></canvas>
+
+<h2>📋 バトル</h2>
+<div id="list" class="list"></div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("splatoon_data") || "[]");
+
+function addMatch() {
+  data.push({
+    weapon: weapon.value,
+    stage: stage.value,
+    rule: rule.value,
+    k: Number(kills.value),
+    d: Number(deaths.value),
+    paint: Number(paint.value),
+    r: result.value,
+    memo: memo.value
+  });
+
+  localStorage.setItem("splatoon_data", JSON.stringify(data));
+  render();
+}
+
+function render() {
+  let win = 0, k=0, d=0, p=0;
+
+  list.innerHTML = "";
+
+  data.forEach((m, i) => {
+    if (m.r === "win") win++;
+    k += m.k; d += m.d; p += m.paint;
+
+    list.innerHTML += `
+      <a href="match.html?id=${i}">
+        <div class="card">
+          <b>${m.weapon}</b> ｜ ${m.rule}<br>
+          ${m.stage}<br>
+          ${m.k} / ${m.d} ｜ ${m.paint}p<br>
+          <b>${m.r}</b>
+        </div>
+      </a>
+    `;
+  });
+
+  rate.textContent = data.length ? (win/data.length*100).toFixed(1)+"%" : "0%";
+  count.textContent = data.length;
+  kd.textContent = d ? (k/d).toFixed(2) : k;
+  paintAvg.textContent = data.length ? (p/data.length).toFixed(0) : 0;
+
+  new Chart(winChart, {
+    type: "doughnut",
+    data: {
+      labels: ["勝ち","負け"],
+      datasets: [{
+        data: [win, data.length-win],
+        backgroundColor: ["#00ff99","#ff4d4d"]
+      }]
+    }
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
