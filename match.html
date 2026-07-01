@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>バトル詳細</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  background: #0f0f0f;
+  color: #fff;
+  padding: 20px;
+}
+
+.card {
+  background: #1f1f1f;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: auto;
+}
+
+.win { color: #00ff99; }
+.lose { color: #ff4d4d; }
+
+a { color: #00ffd5; }
+</style>
+</head>
+
+<body>
+
+<a href="index.html">← 戻る</a>
+
+<h1>📄 詳細</h1>
+
+<div id="view" class="card"></div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("splatoon_data") || "[]");
+let id = new URLSearchParams(location.search).get("id");
+
+let m = data[id];
+
+view.innerHTML = m ? `
+  <h2>${m.weapon}</h2>
+  🗺️ ${m.stage}<br>
+  🎮 ${m.rule}<br><br>
+
+  🔫 ${m.k} / 💀 ${m.d}<br>
+  🟢 ${m.paint}p<br><br>
+
+  📊 ${m.r}<br>
+  📝 ${m.memo || "なし"}
+` : "データなし";
+</script>
+
+</body>
+</html>
